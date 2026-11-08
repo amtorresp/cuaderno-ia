@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuaderno IA Enfermería</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Lexend:wght@400;500;700&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: una columna de lectura con índice fijo arriba; tarjetas de prompt copiables */
+:root{
+  --bg:#ffffff; --fg:#17182b; --muted:#565a70; --line:#dfe3ee;
+  --cyan:#15afe5; --blue:#1713e4; --red:#e8143a; --tint:#eef8fd; --tint2:#f3f3ff; --code:#f6f7fb;
+  --display:"Bowlby One","Arial Black",Impact,sans-serif;
+  --body:"Lexend",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1120; --fg:#eceefa; --muted:#a6abc4; --line:#2a2e48;
+  --cyan:#45c3ef; --blue:#8f8cff; --red:#ff5a74; --tint:#13243a; --tint2:#1b1c38; --code:#171a2e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1120; --fg:#eceefa; --muted:#a6abc4; --line:#2a2e48;
+  --cyan:#45c3ef; --blue:#8f8cff; --red:#ff5a74; --tint:#13243a; --tint2:#1b1c38; --code:#171a2e; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.top{display:flex;gap:20px;align-items:center}
+.top img{width:38px;height:auto;flex:none}
+.eyebrow{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,4.5vw,2.6rem);line-height:1.08;margin:.2rem 0 0;color:var(--blue);text-wrap:balance}
+h1 span{color:var(--cyan)}
+.lead{color:var(--muted);max-width:62ch;margin:14px 0 0}
+.rule{margin-top:22px;background:var(--tint);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
+.rule b{color:var(--red)}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-top:24px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+nav ul{list-style:none;margin:0;padding:10px 0;display:flex;gap:8px;overflow-x:auto}
+nav a{display:inline-block;white-space:nowrap;text-decoration:none;color:var(--fg);font-size:.88rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line)}
+nav a:hover,nav a:focus-visible{border-color:var(--cyan);outline:none;color:var(--blue)}
+h2{font-family:var(--display);font-weight:400;font-size:1.45rem;color:var(--blue);margin:44px 0 6px;letter-spacing:.01em;scroll-margin-top:70px}
+h2 + p{color:var(--muted);margin:0 0 16px;max-width:62ch}
+.block{scroll-margin-top:70px}
+.block-title{font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--cyan);margin:26px 0 10px;font-weight:700}
+.prompts{display:grid;gap:14px}
+.prompt{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg);scroll-margin-top:70px}
+.prompt header{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--tint2)}
+.pid{font-family:var(--mono);font-size:.82rem;color:var(--bg);background:var(--blue);border-radius:6px;padding:2px 7px;flex:none}
+.prompt h4{margin:0;font-size:1rem;font-weight:500;flex:1;min-width:0}
+pre{margin:0;padding:14px 16px;white-space:pre-wrap;word-wrap:break-word;font-family:var(--body);font-size:.95rem;background:var(--code);color:var(--fg)}
+.copy{flex:none;font:500 .85rem var(--body);color:var(--blue);background:var(--bg);border:1px solid var(--blue);border-radius:8px;padding:6px 12px;cursor:pointer}
+.copy:hover{background:var(--blue);color:var(--bg)}
+.copy:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.copy.ok{background:var(--cyan);border-color:var(--cyan);color:#06202c}
+.panel{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.panel header{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--tint)}
+.panel header h4{margin:0;flex:1;font-size:1rem;font-weight:500}
+.dialog{margin:0;padding:12px 16px;display:grid;gap:6px}
+.dialog p{margin:0}
+.dialog .q{font-size:.75rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;display:block}
+ul.tools{list-style:none;padding:0;margin:0;display:grid;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+ul.tools li{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr);gap:4px 18px;padding:12px 16px;border-top:1px solid var(--line)}
+ul.tools li:first-child{border-top:0}
+ul.tools li:last-child{background:var(--tint)}
+.task{font-weight:700}
+.tl{min-width:0}
+.links{grid-column:2;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.85rem}
+.links a{color:var(--blue)}
+@media (max-width:620px){ul.tools li{grid-template-columns:1fr}.links{grid-column:1}}
+ol.normas{margin:0;padding-left:1.3rem;display:grid;gap:8px;max-width:66ch}
+ol.claves{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+ol.claves li{display:flex;gap:14px;align-items:flex-start}
+.kn{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);color:#fff;background:var(--red)}
+ol.claves p{margin:2px 0 0;color:var(--muted)}
+.src{font-size:.85rem;color:var(--muted)}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+@media print{nav,.copy,body::before{display:none!important}.prompt,.panel{break-inside:avoid}h2{break-after:avoid}.wrap{padding-block:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><img src="data:image/png;base64,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" alt="Logotipo del docente: una jeringa">
+    <div><p class="eyebrow">Colegio Oficial de Enfermería de Teruel · Alcañiz</p>
+    <h1>IA generativa para enfermería: <span>cuaderno de prácticas</span></h1></div></div>
+  <p class="lead">Todo lo que vamos a copiar y pegar durante el curso. Cada prompt tiene un número (P1, P2…) que verás en las diapositivas. Pulsa «Copiar» y pégalo en la herramienta que indique el docente.</p>
+  <div class="rule"><span aria-hidden="true">🔒</span><div><b>Norma del curso:</b> todos los casos son ficticios. Nunca introduzcas datos reales de pacientes en una IA de uso general. Son ordenadores compartidos: trabaja en ventana de incógnito y cierra sesión al terminar.</div></div>
+
+  <nav aria-label="Secciones"><ul>
+    <li><a href="#fuente">Fuente</a></li>
+    <li><a href="#transcripcion">Transcripción</a></li>
+    <li><a href="#prompts">Prompts</a></li>
+    <li><a href="#instruye">Instruye tu IA</a></li>
+    <li><a href="#herramientas">Herramientas</a></li>
+    <li><a href="#salud">Normas del SALUD</a></li>
+    <li><a href="#claves">5 claves</a></li>
+    <li><a href="#inicio">El prompt inicial</a></li>
+  </ul></nav>
+
+  <h2 id="fuente">La fuente cerrada</h2>
+  <p>La información validada sobre la que trabajamos. La IA la transforma, pero no añade contenido clínico. Ejemplo docente: adáptalo siempre a los protocolos de tu unidad.</p>
+  <div class="panel"><header><h4>Autocuidado en insuficiencia cardiaca · caso Pilar</h4><button class="copy" type="button" data-target="t-fuente">Copiar</button></header>
+  <pre id="t-fuente">• Pésese cada mañana, después de orinar y antes de desayunar. Apunte el peso.
+• Avise a su enfermera o a su médico si sube más de 2 kg en 3 días.
+• Avise también si se le hinchan más las piernas, si se ahoga más al caminar o si necesita más almohadas para dormir.
+• Tome la medicación tal como está pautada. No deje los diuréticos (las pastillas de orinar) por su cuenta.
+• Reduzca la sal en las comidas.
+• Llame al 112 si se ahoga estando en reposo, si tiene dolor en el pecho o si se desmaya.</pre></div>
+
+  <h2 id="transcripcion">Transcripción de la llamada</h2>
+  <p>Llamada de seguimiento a las 48 horas del alta. Caso ficticio, para la práctica de audio a texto (P5).</p>
+  <div class="panel"><header><h4>Llamada de la enfermera del centro de salud a Pilar</h4><button class="copy" type="button" data-target="t-trans">Copiar</button></header>
+  <pre id="t-trans" hidden>ENFERMERA: Buenos días, ¿Pilar? Soy Marta, la enfermera del centro de salud. La llamo porque le dieron el alta el lunes. ¿Cómo se encuentra?
+PILAR: Pues regular, hija. Mejor que en el hospital, pero me canso.
+ENFERMERA: ¿Se está pesando por las mañanas?
+PILAR: Sí, lo apunto en el calendario. El lunes 64 y hoy 66 y pico.
+ENFERMERA: ¿Ha notado los tobillos más hinchados?
+PILAR: Un poco, sí. Por la tarde, sobre todo.
+ENFERMERA: ¿Y le cuesta más respirar? ¿Duerme con más almohadas?
+PILAR: Anoche puse dos, que con una me ahogaba un poco.
+ENFERMERA: ¿Las pastillas de orinar se las está tomando?
+PILAR: La de la mañana, sí. La de la tarde no, que luego no paro de levantarme por la noche.
+ENFERMERA: Entiendo. Vamos a hacer una cosa: esta tarde paso por su casa a verla. Mientras tanto, si se ahoga estando sentada o le duele el pecho, llame al 112.
+PILAR: Vale, hija. Mi hija Rosa viene el sábado.</pre>
+  <div class="dialog"><p><span class="q">Enfermera</span>Buenos días, ¿Pilar? Soy Marta, la enfermera del centro de salud. La llamo porque le dieron el alta el lunes. ¿Cómo se encuentra?</p><p><span class="q">Pilar</span>Pues regular, hija. Mejor que en el hospital, pero me canso.</p><p><span class="q">Enfermera</span>¿Se está pesando por las mañanas?</p><p><span class="q">Pilar</span>Sí, lo apunto en el calendario. El lunes 64 y hoy 66 y pico.</p><p><span class="q">Enfermera</span>¿Ha notado los tobillos más hinchados?</p><p><span class="q">Pilar</span>Un poco, sí. Por la tarde, sobre todo.</p><p><span class="q">Enfermera</span>¿Y le cuesta más respirar? ¿Duerme con más almohadas?</p><p><span class="q">Pilar</span>Anoche puse dos, que con una me ahogaba un poco.</p><p><span class="q">Enfermera</span>¿Las pastillas de orinar se las está tomando?</p><p><span class="q">Pilar</span>La de la mañana, sí. La de la tarde no, que luego no paro de levantarme por la noche.</p><p><span class="q">Enfermera</span>Entiendo. Vamos a hacer una cosa: esta tarde paso por su casa a verla. Mientras tanto, si se ahoga estando sentada o le duele el pecho, llame al 112.</p><p><span class="q">Pilar</span>Vale, hija. Mi hija Rosa viene el sábado.</p></div></div>
+
+  <h2 id="prompts">Los prompts del curso</h2>
+  <p>Están en el orden en que los usamos. Los que llevan [corchetes] tienes que completarlos tú.</p>
+  <section class="block" id="b-apertura">
+  <h3 class="block-title">Apertura</h3>
+  <div class="prompts">
+  <article class="prompt" id="P1">
+    <header><span class="pid">P1</span><h4>El primer intento</h4>
+    <button class="copy" type="button" data-target="t-P1" aria-label="Copiar P1">Copiar</button></header>
+    <pre id="t-P1">Dame información sobre la insuficiencia cardiaca para pacientes.</pre>
+  </article>
+  </div></section>
+<section class="block" id="b-cmopedir">
+  <h3 class="block-title">Cómo pedir</h3>
+  <div class="prompts">
+  <article class="prompt" id="P2">
+    <header><span class="pid">P2</span><h4>Pídele que pregunte</h4>
+    <button class="copy" type="button" data-target="t-P2" aria-label="Copiar P2">Copiar</button></header>
+    <pre id="t-P2">Quiero preparar información sobre insuficiencia cardiaca para una paciente concreta que se va de alta. Antes de responder, hazme las preguntas que necesites para entender qué quiero conseguir y poder darme una respuesta útil.</pre>
+  </article>
+<article class="prompt" id="P3">
+    <header><span class="pid">P3</span><h4>El mismo encargo, con C-D-N-F-L</h4>
+    <button class="copy" type="button" data-target="t-P3" aria-label="Copiar P3">Copiar</button></header>
+    <pre id="t-P3">Soy enfermera del Hospital de Alcañiz (CONTEXTO). Pilar, 82 años, vive sola en un pueblo, tiene escolarización básica y se va de alta tras un ingreso por insuficiencia cardiaca (DATOS). Necesito una hoja breve para que sepa qué vigilar en casa y cuándo pedir ayuda (NECESIDAD). Hazla con frases cortas y una lista de máximo 6 puntos, letra grande (FORMATO). No uses tecnicismos, no la infantilices y no añadas medicación ni dosis (LÍMITES).</pre>
+  </article>
+  </div></section>
+<section class="block" id="b-cuida">
+  <h3 class="block-title">Cuida</h3>
+  <div class="prompts">
+  <article class="prompt" id="P4">
+    <header><span class="pid">P4</span><h4>Reto 1 · Un alta, cuatro destinatarios</h4>
+    <button class="copy" type="button" data-target="t-P4" aria-label="Copiar P4">Copiar</button></header>
+    <pre id="t-P4">Actúa como enfermera experta en educación para la salud. Te doy una información sanitaria ya validada (FUENTE). Adáptala para [DESTINATARIO: Pilar / Rosa / Elena / enfermera del centro de salud]. Objetivo: que pueda [qué debe comprender o hacer]. Formato: [hoja breve / mensaje de WhatsApp / frases muy sencillas / informe de continuidad de cuidados]. Usa EXCLUSIVAMENTE la fuente: no añadas recomendaciones nuevas y, si omites algo, dime qué has omitido. Si te falta información, hazme antes hasta 3 preguntas.
+
+FUENTE:
+• Pésese cada mañana, después de orinar y antes de desayunar. Apunte el peso.
+• Avise a su enfermera o a su médico si sube más de 2 kg en 3 días.
+• Avise también si se le hinchan más las piernas, si se ahoga más al caminar o si necesita más almohadas para dormir.
+• Tome la medicación tal como está pautada. No deje los diuréticos (las pastillas de orinar) por su cuenta.
+• Reduzca la sal en las comidas.
+• Llame al 112 si se ahoga estando en reposo, si tiene dolor en el pecho o si se desmaya.</pre>
+  </article>
+<article class="prompt" id="P5">
+    <header><span class="pid">P5</span><h4>Audio → texto · Nota de enfermería</h4>
+    <button class="copy" type="button" data-target="t-P5" aria-label="Copiar P5">Copiar</button></header>
+    <pre id="t-P5">Te paso la transcripción de una llamada de seguimiento enfermera (caso ficticio). Redacta una nota de enfermería estructurada en: valoración, problemas detectados, intervenciones realizadas, plan y signos de alarma explicados. Usa SOLO lo que aparece en la transcripción. Si falta un dato, escribe [NO CONSTA]. No inventes constantes, diagnósticos ni tratamientos.
+
+TRANSCRIPCIÓN:
+ENFERMERA: Buenos días, ¿Pilar? Soy Marta, la enfermera del centro de salud. La llamo porque le dieron el alta el lunes. ¿Cómo se encuentra?
+PILAR: Pues regular, hija. Mejor que en el hospital, pero me canso.
+ENFERMERA: ¿Se está pesando por las mañanas?
+PILAR: Sí, lo apunto en el calendario. El lunes 64 y hoy 66 y pico.
+ENFERMERA: ¿Ha notado los tobillos más hinchados?
+PILAR: Un poco, sí. Por la tarde, sobre todo.
+ENFERMERA: ¿Y le cuesta más respirar? ¿Duerme con más almohadas?
+PILAR: Anoche puse dos, que con una me ahogaba un poco.
+ENFERMERA: ¿Las pastillas de orinar se las está tomando?
+PILAR: La de la mañana, sí. La de la tarde no, que luego no paro de levantarme por la noche.
+ENFERMERA: Entiendo. Vamos a hacer una cosa: esta tarde paso por su casa a verla. Mientras tanto, si se ahoga estando sentada o le duele el pecho, llame al 112.
+PILAR: Vale, hija. Mi hija Rosa viene el sábado.</pre>
+  </article>
+<article class="prompt" id="P6">
+    <header><span class="pid">P6</span><h4>Texto → imagen · El imán de la nevera</h4>
+    <button class="copy" type="button" data-target="t-P6" aria-label="Copiar P6">Copiar</button></header>
+    <pre id="t-P6">Diseña una tarjeta tamaño imán de nevera para una persona de 82 años con baja alfabetización sanitaria. Usa EXCLUSIVAMENTE estas 3 ideas: 1) Pésate cada mañana. 2) Si subes más de 2 kg en 3 días, llama a tu enfermera. 3) Si te ahogas en reposo o te duele el pecho, llama al 112. Letra muy grande, alto contraste, pictogramas sencillos, en español. No añadas nada más.</pre>
+  </article>
+<article class="prompt" id="P7">
+    <header><span class="pid">P7</span><h4>salud-GPT · Misma descripción, dos herramientas</h4>
+    <button class="copy" type="button" data-target="t-P7" aria-label="Copiar P7">Copiar</button></header>
+    <pre id="t-P7">Mujer de 82 años, alta hace 3 días por insuficiencia cardiaca. Refiere aumento de 2,5 kg en 3 días, edemas maleolares bilaterales y disnea al subir una cuesta que antes toleraba. Duerme con dos almohadas. Afebril. ¿Qué sospechas se plantean y qué datos de valoración debo recoger en la visita domiciliaria?</pre>
+  </article>
+  </div></section>
+<section class="block" id="b-investiga">
+  <h3 class="block-title">Investiga</h3>
+  <div class="prompts">
+  <article class="prompt" id="P8">
+    <header><span class="pid">P8</span><h4>La referencia</h4>
+    <button class="copy" type="button" data-target="t-P8" aria-label="Copiar P8">Copiar</button></header>
+    <pre id="t-P8">Dame 3 referencias bibliográficas de ensayos clínicos sobre intervenciones educativas de enfermería en pacientes con insuficiencia cardiaca, con autores, revista, año y DOI.</pre>
+  </article>
+<article class="prompt" id="P9">
+    <header><span class="pid">P9</span><h4>La misma pregunta, tres puertas</h4>
+    <button class="copy" type="button" data-target="t-P9" aria-label="Copiar P9">Copiar</button></header>
+    <pre id="t-P9">En adultos con insuficiencia cardiaca, ¿las intervenciones educativas lideradas por enfermeras reducen los reingresos hospitalarios? Resume lo que dice la evidencia e indica las fuentes que utilizas.</pre>
+  </article>
+<article class="prompt" id="P10">
+    <header><span class="pid">P10</span><h4>Conversar con MIS documentos</h4>
+    <button class="copy" type="button" data-target="t-P10" aria-label="Copiar P10">Copiar</button></header>
+    <pre id="t-P10">Responde únicamente con la información de las fuentes que he subido. Si la respuesta no está en ellas, dímelo. Cita el fragmento en el que te basas. Pregunta: ¿qué recomendaciones de autocuidado da esta guía para el control del peso?</pre>
+  </article>
+<article class="prompt" id="P11">
+    <header><span class="pid">P11</span><h4>Prompt A · Justifícame</h4>
+    <button class="copy" type="button" data-target="t-P11" aria-label="Copiar P11">Copiar</button></header>
+    <pre id="t-P11">Para que los pacientes con insuficiencia cardiaca de mi centro de salud se pesen todos los días, voy a crear un grupo de WhatsApp con todos ellos y les mandaré un recordatorio cada mañana. Creo que es claramente la mejor solución. Ayúdame a justificar esta propuesta para presentarla al equipo.</pre>
+  </article>
+<article class="prompt" id="P12">
+    <header><span class="pid">P12</span><h4>Instrucciones para tu IA</h4>
+    <button class="copy" type="button" data-target="t-P12" aria-label="Copiar P12">Copiar</button></header>
+    <pre id="t-P12">No me des la razón por defecto. Antes de ayudarme con una idea, señala sus supuestos, sus riesgos (especialmente de privacidad y seguridad del paciente) y lo que falta. Separa hechos, inferencias y opiniones. Si no sabes algo, dilo. Tono profesional y explicaciones con ejemplos.</pre>
+  </article>
+<article class="prompt" id="P13">
+    <header><span class="pid">P13</span><h4>Prompt B · Cuestióname</h4>
+    <button class="copy" type="button" data-target="t-P13" aria-label="Copiar P13">Copiar</button></header>
+    <pre id="t-P13">Estoy valorando crear un grupo de WhatsApp con todos los pacientes con insuficiencia cardiaca de mi centro de salud para recordarles que se pesen cada mañana. No asumas que mi propuesta es correcta. Identifica supuestos, riesgos (privacidad, seguridad, brecha digital, carga de trabajo), información que falta, argumentos a favor y en contra y alternativas. Separa lo que sabemos de lo que suponemos.</pre>
+  </article>
+  </div></section>
+<section class="block" id="b-crea">
+  <h3 class="block-title">Crea</h3>
+  <div class="prompts">
+  <article class="prompt" id="P14">
+    <header><span class="pid">P14</span><h4>Texto → vídeo · Sala de espera</h4>
+    <button class="copy" type="button" data-target="t-P14" aria-label="Copiar P14">Copiar</button></header>
+    <pre id="t-P14">Vídeo de 8 segundos, plano medio, luz cálida de mañana: una mujer mayor en la cocina de una casa de pueblo se sube a una báscula, mira el número con tranquilidad y lo apunta en un calendario colgado en la pared. Estilo realista y sereno. Sin texto en pantalla.</pre>
+  </article>
+<article class="prompt" id="P15">
+    <header><span class="pid">P15</span><h4>Construir · Ronda 1 · Que pregunte</h4>
+    <button class="copy" type="button" data-target="t-P15" aria-label="Copiar P15">Copiar</button></header>
+    <pre id="t-P15">Vamos a diseñar un recurso digital educativo sencillo para personas cuidadoras de pacientes con insuficiencia cardiaca: un juego de «¿Qué harías si…?» con situaciones cotidianas. No debe recoger datos personales, diagnosticar ni sustituir la valoración profesional. Todavía NO construyas nada: hazme solo las preguntas imprescindibles para entender a quién va dirigido, qué debe aprender y cómo debe funcionar.</pre>
+  </article>
+<article class="prompt" id="P16">
+    <header><span class="pid">P16</span><h4>Construir · Ronda 2 · Construye</h4>
+    <button class="copy" type="button" data-target="t-P16" aria-label="Copiar P16">Copiar</button></header>
+    <pre id="t-P16">Con nuestras respuestas y usando EXCLUSIVAMENTE la fuente que te pego, crea un primer prototipo funcional pensado para móvil: 6 situaciones, 3 opciones por situación, explicación breve de la respuesta correcta, letra grande y lenguaje claro. Incluye un aviso visible: «Recurso educativo. No sustituye a tu enfermera ni a tu médico». No recojas ningún dato.
+
+FUENTE:
+• Pésese cada mañana, después de orinar y antes de desayunar. Apunte el peso.
+• Avise a su enfermera o a su médico si sube más de 2 kg en 3 días.
+• Avise también si se le hinchan más las piernas, si se ahoga más al caminar o si necesita más almohadas para dormir.
+• Tome la medicación tal como está pautada. No deje los diuréticos (las pastillas de orinar) por su cuenta.
+• Reduzca la sal en las comidas.
+• Llame al 112 si se ahoga estando en reposo, si tiene dolor en el pecho o si se desmaya.</pre>
+  </article>
+<article class="prompt" id="P17">
+    <header><span class="pid">P17</span><h4>Construir · Ronda 3 · Ataca tu resultado</h4>
+    <button class="copy" type="button" data-target="t-P17" aria-label="Copiar P17">Copiar</button></header>
+    <pre id="t-P17">No asumas que este prototipo es bueno porque acabamos de crearlo. Actúa como revisor crítico: busca problemas de comprensión, accesibilidad, seguridad, contenido que no esté en la fuente y uso por personas con baja alfabetización sanitaria. Distingue problemas reales de preferencias de diseño y propón los 5 cambios prioritarios.</pre>
+  </article>
+  </div></section>
+
+  <h2 id="instruye">Instruye a tu IA</h2>
+  <p>Para que no te dé la razón por defecto. Pégalo en las instrucciones personalizadas de tu herramienta (en ChatGPT, «Personalización»; en Gemini, las instrucciones o un Gem; en Claude, las preferencias del perfil o un proyecto). Los menús cambian a menudo; si no lo encuentras, pégalo al principio de la conversación.</p>
+  <div class="panel"><header><h4>Así tiene instruida su IA el docente</h4><button class="copy" type="button" data-target="t-doc">Copiar</button></header>
+  <pre id="t-doc">Tono y lenguaje formal. Explicaciones bien razonadas, con ejemplos. No me gusta que me des siempre la razón. Me gusta el pensamiento crítico y que siempre se intente dar lo mejor de sí mismo.</pre></div>
+
+  <h2 id="herramientas">Herramientas por tarea</h2>
+  <p>Una brújula, no un catálogo: elige la herramienta según la tarea que tienes delante.</p>
+  <ul class="tools"><li><span class="task">Conversar y redactar</span><span class="tl">ChatGPT · Claude · Gemini</span><span class="links"><a href="https://chatgpt.com" target="_blank" rel="noopener">chatgpt.com</a><a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a><a href="https://gemini.google.com" target="_blank" rel="noopener">gemini.google.com</a></span></li><li><span class="task">Buscar con fuentes</span><span class="tl">ChatGPT o Gemini con búsqueda · Perplexity · Consensus · Elicit · PubMed</span><span class="links"><a href="https://www.perplexity.ai" target="_blank" rel="noopener">perplexity.ai</a><a href="https://consensus.app" target="_blank" rel="noopener">consensus.app</a><a href="https://elicit.com" target="_blank" rel="noopener">elicit.com</a><a href="https://pubmed.ncbi.nlm.nih.gov" target="_blank" rel="noopener">pubmed.ncbi.nlm.nih.gov</a></span></li><li><span class="task">Transformar documentos</span><span class="tl">Gemini Notebook (antes NotebookLM)</span><span class="links"><a href="https://notebooklm.google.com" target="_blank" rel="noopener">notebooklm.google.com</a></span></li><li><span class="task">Imagen</span><span class="tl">Gemini (Nano Banana) · ChatGPT Imágenes</span></li><li><span class="task">Esquemas e infografías</span><span class="tl">Napkin (convierte tu texto en un esquema editable)</span><span class="links"><a href="https://www.napkin.ai" target="_blank" rel="noopener">napkin.ai</a></span></li><li><span class="task">Voz y audio</span><span class="tl">ElevenLabs · resúmenes de audio de Gemini Notebook</span><span class="links"><a href="https://elevenlabs.io" target="_blank" rel="noopener">elevenlabs.io</a></span></li><li><span class="task">Vídeo</span><span class="tl">Veo (Gemini) · Sora · HeyGen (avatares)</span></li><li><span class="task">Construir pequeñas herramientas</span><span class="tl">Gemini Canvas · Claude</span></li><li><span class="task">Datos reales de pacientes</span><span class="tl">Solo herramientas corporativas autorizadas (p. ej., salud-GPT en la HCE)</span></li></ul>
+
+  <h2 id="salud">Normas del Servicio Aragonés de Salud</h2>
+  <p>Resumen de la Guía de seguridad para el uso de la IA del SALUD y de las recomendaciones generales del Departamento de Sanidad.</p>
+  <ol class="normas">
+    <li><strong>No subas datos personales</strong> de pacientes, empleados o proveedores: nombres, direcciones, teléfonos, DNI, imágenes, datos médicos ni cualquier información identificable.</li>
+    <li><strong>No compartas documentos internos</strong>: historias clínicas, informes, procedimientos, contratos ni documentos estratégicos.</li>
+    <li><strong>Usa solo herramientas autorizadas</strong> por la organización y no emplees cuentas personales para tareas profesionales.</li>
+    <li><strong>Usa ejemplos ficticios</strong> para redactar, generar ideas o pedir ayuda.</li>
+    <li><strong>Revisa siempre los resultados</strong>: todo contenido generado debe supervisarse y validarse antes de usarse.</li>
+    <li><strong>La IA no sustituye el juicio clínico</strong>: la responsabilidad final es del profesional. Prioriza sistemas fiables e informa al paciente cuando la IA influya en su diagnóstico o tratamiento.</li>
+  </ol>
+  <p class="src">En caso de duda o incidencia: 4100@aragon.es</p>
+
+  <h2 id="claves">Las 5 claves que no debes olvidar</h2>
+  <p>&nbsp;</p>
+  <ol class="claves"><li><span class="kn">1</span><div><strong>Ningún dato real en una IA de uso general</strong><p>En un pueblo pequeño, la edad y el diagnóstico ya identifican a una persona. Para datos reales, solo herramientas corporativas autorizadas.</p></div></li><li><span class="kn">2</span><div><strong>Cuidado con la adulación</strong><p>Si le pides que te dé la razón, te la dará. Pídele que te cuestione o instrúyela para que lo haga siempre.</p></div></li><li><span class="kn">3</span><div><strong>Fluidez no es verdad</strong><p>Verifica fuera de la IA: busca la referencia y lee el original.</p></div></li><li><span class="kn">4</span><div><strong>Quien firma eres tú</strong><p>Revisa lo que añade, lo que omite y lo que no consta. La responsabilidad final es del profesional.</p></div></li><li><span class="kn">5</span><div><strong>Una voz ya no demuestra identidad</strong><p>Ante audios o vídeos que piden algo urgente, comprueba por otra vía.</p></div></li></ol>
+
+  <h2 id="inicio">El prompt con el que empezó este curso</h2>
+  <p>Este curso se preparó conversando con una IA. Empezó con este prompt, acompañado de las diapositivas del curso anterior, las de las jornadas de AECA y la documentación de acreditación. Después hubo preguntas, correcciones y verificación. Úsalo como plantilla para preparar tus propias sesiones.</p>
+  <div class="panel"><header><h4>Prompt inicial del docente</h4><button class="copy" type="button" data-target="t-inicio">Copiar</button></header>
+  <pre id="t-inicio">Ahora, tienes que diseñar un curso y sus diapositivas. Para ello, te voy a agregar las diapositivas que utilicé para el taller de AECA, las diapositivas que utilicé hace un año para el curso de IA y la documentación que se utilizó para acreditar el curso. Este se dará para enfermeras colegiadas en el Colegio de Enfermería de Teruel, el cual financia el curso. Quiero reutilizar el estilo del curso anterior, pero mejorarlo con todos tus conocimientos actuales y aprovechando también lo que aplicamos en las Jornadas de AECA que hicimos recientemente. Te adjunto su PPTX, donde también hay anotaciones para el que expone, por si te vale. Finalmente, debes diseñar todas las diapositivas (16:9) para utilizarlas para dicho curso y que sirvan como guion. Utiliza la base del curso anterior de IA, no la de las jornadas de AECA: el fondo blanco (o como consideres), con mi logo. Lo que sí me gustaría es completar el curso anterior con la práctica de las jornadas de AECA e incluso mejorarlo. Hazme todas las preguntas que consideres para darme el mejor resultado posible.</pre></div>
+
+  <footer>Antonio Manuel Torres Pérez · Enfermero · Responsable funcional de la Implantación de la HCE en Atención Primaria · Dirección General de Planificación y Docencia · Departamento de Sanidad del Gobierno de Aragón.<br>Las herramientas y sus menús cambian con frecuencia; esta página refleja su estado en noviembre de 2026.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    var el=document.getElementById(b.dataset.target); var txt=el.textContent;
+    function done(){b.classList.add('ok');var o=b.textContent;b.textContent='Copiado';setTimeout(function(){b.classList.remove('ok');b.textContent='Copiar'},1600)}
+    function fallback(){var wasHidden=el.hidden;el.hidden=false;var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done()}catch(e){b.textContent='Selecciona y copia'}if(wasHidden){setTimeout(function(){el.hidden=true},4000)}}
+    try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(e){fallback()}
+  });
+});
+</script>
+</body>
+</html>
